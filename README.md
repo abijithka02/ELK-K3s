@@ -18,62 +18,7 @@ Once the ELK operator is deployed successfully, proceed to the next step.
 
 ---
 
-## Step 2: Install the NGINX Ingress Controller
-To expose the services, install **NGINX Ingress Controller** using Helm:
-
-```sh
-helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx  
-helm repo update
-helm install nginx-ingress ingress-nginx/ingress-nginx \
-  --namespace ingress-nginx --create-namespace \
-  --set controller.watchNamespace=""
-```
-
----
-
-## Step 3: Create an Ingress Resource for Kibana
-Now, create an **Ingress Resource** to expose Kibana. Apply the following YAML file in the **default** namespace (or the namespace where ELK is deployed):
-
-```yaml
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: kibana-ingress
-  namespace: default
-  annotations:
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-buffering: "off"
-    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-spec:
-  ingressClassName: nginx
-  tls:
-  - hosts:
-    - example.domain.com
-    secretName: kibana-tls
-  rules:
-  - host: https://example@domain.com # Replace with your domain or external IP
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: quickstart-kb-http
-            port:
-              number: 5601
-```
-
-Apply this YAML file using:
-```sh
-kubectl apply -f kibana-ingress.yaml
-```
-
----
-
-## Step 4: Install Cert-Manager for SSL
+## Step 2: Install Cert-Manager for SSL
 To enable **HTTPS**, install **Cert-Manager**:
 
 ```sh
@@ -112,8 +57,63 @@ kubectl apply -f cluster-issuer.yaml
 
 ---
 
+## Step 3: Install the NGINX Ingress Controller
+To expose the services, install **NGINX Ingress Controller** using Helm:
+
+```sh
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx  
+helm repo update
+helm install nginx-ingress ingress-nginx/ingress-nginx \
+  --namespace ingress-nginx --create-namespace \
+  --set controller.watchNamespace=""
+```
+
+---
+
+## Step 4: Create an Ingress Resource for Kibana
+Now, create an **Ingress Resource** to expose Kibana. Apply the following YAML file in the **default** namespace (or the namespace where ELK is deployed):
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kibana-ingress
+  namespace: default
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-buffering: "off"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - example.domain.com
+    secretName: kibana-tls
+  rules:
+  - host: example.domain.com  # Replace with your domain or external IP
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: quickstart-kb-http
+            port:
+              number: 5601
+```
+
+Apply this YAML file using:
+```sh
+kubectl apply -f kibana-ingress.yaml
+```
+
+---
+
 ## Step 5: Accessing Kibana
-Once everything is set up, access **Kibana** using your domain (`https://example@domain.com`).
+Once everything is set up, access **Kibana** using your domain (`https://example.domain.com`).
 
 To retrieve the **Kibana username and password**, use:
 
