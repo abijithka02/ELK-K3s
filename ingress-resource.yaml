@@ -1,0 +1,36 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kibana-ingress
+  namespace: default
+  annotations:
+    # Set the proxy read timeout to 3600 seconds
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    # Set the proxy send timeout to 3600 seconds
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    # Disable proxy buffering
+    nginx.ingress.kubernetes.io/proxy-buffering: "off"
+    # Use HTTPS protocol for backend communication
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    # Specify the cert-manager cluster issuer to use for TLS certificates
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    # Enable SSL redirection
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - example.domain.com
+    secretName: kibana-tls
+  rules:
+  - host: example.domain.com  # Replace with your domain or external IP
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: quickstart-kb-http
+            port:
+              number: 5601
