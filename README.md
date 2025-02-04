@@ -51,7 +51,7 @@ spec:
   ingressClassName: nginx
   tls:
   - hosts:
-    - staging.scudnetworks.com
+    - example.domain.com
     secretName: kibana-tls
   rules:
   - host: https://example@domain.com # Replace with your domain or external IP
